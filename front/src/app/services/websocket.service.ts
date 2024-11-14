@@ -1,46 +1,53 @@
 import { Injectable } from '@angular/core';
-import {Client, Message} from '@stomp/stompjs';
-import {BehaviorSubject, Observable} from 'rxjs';
+import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebsocketService {
-  private client: Client;
-  private messageSubject: BehaviorSubject<string> = new BehaviorSubject('');
+  private stompClient: Client | null = null;
+  private messageSubject: Subject<string> = new Subject<string>();
 
-  constructor() {
-    this.client = new Client({
-      brokerURL: 'ws://localhost:3000/chat',
-      webSocketFactory: () => new SockJS('http://localhost:3000/chat'),
-      reconnectDelay: 5000
-    });
-  }
+  constructor() { }
 
   connect(): void {
-    this.client.onConnect = () => {
-      this.client.subscribe('/topic/message', (message: Message) => {
-        this.messageSubject.next(message.body);
-      });
-    };
-    this.client.activate();
-  }
+    const socket = new SockJS('http://localhost:8080/chat');
+    this.stompClient = new Client({
+      webSocketFactory: () => socket,
+      connectHeaders: {},
+      debug: (str) => {
+        console.log(str);
+      },
+      onConnect: (frame) => {
+        console.log('Connected: ' + frame);
 
-  sendMessage(message: any): void {
-    this.client.publish({
-      destination: 'app/message',
-      body: message
+        this.stompClient?.subscribe('/topic/chat', (message) => {
+          this.messageSubject.next(JSON.parse(message.body).message);
+        });
+      }
     });
+    this.stompClient.activate();
   }
 
-  getMessage(): Observable<string> {
+  sendMessage(message: string): void {
+    if (this.stompClient) {
+      this.stompClient.publish({
+        destination: '/app/chat',
+        body: JSON.stringify({ message }),
+      });
+    }
+  }
+
+  getMessages() {
     return this.messageSubject.asObservable();
   }
 
   disconnect(): void {
-    if (this.client.active) {
-      this.client.deactivate();
+    if (this.stompClient) {
+      this.stompClient.deactivate();
+      console.log("Disconnected");
     }
   }
 }

@@ -10,12 +10,13 @@ import {WebsocketService} from '../services/websocket.service';
 export class ChatComponent implements OnInit, OnDestroy {
   message = '';
   messages: string[] = [];
+  messageSubscription!: Subscription;
 
-  constructor(private webSocketService: WebsocketService, private messageSubscription: Subscription) {}
+  constructor(private webSocketService: WebsocketService) {}
 
   ngOnInit(): void {
     this.webSocketService.connect();
-    this.messageSubscription = this.webSocketService.getMessage().subscribe(msg => {
+    this.messageSubscription = this.webSocketService.getMessages().subscribe(msg => {
       this.messages.push(msg);
     });
   }
