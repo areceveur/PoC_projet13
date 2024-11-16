@@ -15,7 +15,7 @@ export class WebsocketService {
   connect(): void {
     const socket = new SockJS('http://localhost:8080/chat');
     this.stompClient = new Client({
-      webSocketFactory: () => socket,
+      webSocketFactory: () => socket as any,
       connectHeaders: {},
       debug: (str) => {
         console.log(str);
@@ -24,19 +24,26 @@ export class WebsocketService {
         console.log('Connected: ' + frame);
 
         this.stompClient?.subscribe('/topic/chat', (message) => {
-          this.messageSubject.next(JSON.parse(message.body).message);
+          console.log("Message reçu dans le service :", message.body);
+          this.messageSubject.next(JSON.parse(message.body).content);
         });
-      }
+      },
+      onStompError: (frame) => {
+        console.error('STOMP Error:', frame);
+      },
     });
     this.stompClient.activate();
   }
 
   sendMessage(message: string): void {
-    if (this.stompClient) {
+    if (this.stompClient && this.stompClient.connected) {
+      console.log("Envoi du message :", message);
       this.stompClient.publish({
         destination: '/app/chat',
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ content: message, sender: 'expediteur' }),
       });
+    } else {
+      console.log("Le client WebSocket n'est pas connecté.");
     }
   }
 
