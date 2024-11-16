@@ -16,6 +16,7 @@ public class ChatController {
         message.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         message.setContent(message.getContent() != null ? message.getContent() : "Contenu par défaut");
         message.setSender(message.getSender() != null ? message.getSender() : "expediteur");
+        message.setRole(message.getRole() != null ? message.getRole() : "Client");
         return message;
     }
 }

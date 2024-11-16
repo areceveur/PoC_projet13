@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { Subject } from 'rxjs';
+import {Observable, Subject} from 'rxjs';
+import {ChatMessage} from '../interface/chatMessage.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -20,12 +21,9 @@ export class WebsocketService {
       debug: (str) => {
         console.log(str);
       },
-      onConnect: (frame) => {
-        console.log('Connected: ' + frame);
-
+      onConnect: () => {
         this.stompClient?.subscribe('/topic/chat', (message) => {
-          console.log("Message reçu dans le service :", message.body);
-          this.messageSubject.next(JSON.parse(message.body).content);
+          this.messageSubject.next(message.body);
         });
       },
       onStompError: (frame) => {
@@ -35,26 +33,33 @@ export class WebsocketService {
     this.stompClient.activate();
   }
 
-  sendMessage(message: string): void {
+  sendMessage(message: ChatMessage): void {
     if (this.stompClient && this.stompClient.connected) {
-      console.log("Envoi du message :", message);
       this.stompClient.publish({
         destination: '/app/chat',
-        body: JSON.stringify({ content: message, sender: 'expediteur' }),
+        body: JSON.stringify(message),
       });
     } else {
-      console.log("Le client WebSocket n'est pas connecté.");
+      console.error("Websocket not connected");
     }
   }
 
-  getMessages() {
-    return this.messageSubject.asObservable();
+  getMessages(): Observable<ChatMessage> {
+    return new Observable<ChatMessage>((observer) => {
+      this.messageSubject.subscribe((message: string) => {
+        try {
+          const parsedMessage = JSON.parse(message) as ChatMessage;
+          observer.next(parsedMessage);
+        } catch (error) {
+          console.error('Error parsing message:', error);
+        }
+      });
+    });
   }
 
   disconnect(): void {
     if (this.stompClient) {
       this.stompClient.deactivate();
-      console.log("Disconnected");
     }
   }
 }

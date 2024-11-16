@@ -1,3 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@300;600&display=swap');
+
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+h1, h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  color: #333;
+}
+
 .chat-container {
   width: 100%;
   max-width: 600px;
@@ -16,6 +30,7 @@
   background: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Roboto', sans-serif;
 }
 
 .message {
@@ -23,6 +38,7 @@
   padding: 8px;
   border-radius: 5px;
   background-color: #e1f5fe;
+  font-family: 'Roboto', sans-serif;
 }
 
 .message-input input {
