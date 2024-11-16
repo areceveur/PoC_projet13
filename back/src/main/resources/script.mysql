@@ -1,0 +1,36 @@
+CREATE TABLE Client (
+	client_id INT PRIMARY KEY,
+	nom VARCHAR(100),
+	email VARCHAR(100) UNIQUE
+	adresse VARCHAR(250),
+	date_naissance DATE
+);
+
+CREATE TABLE Agence (
+	agence_id INT PRIMARY KEY,
+	nom VARCHAR(250),
+);
+
+CREATE TABLE Vehicule (
+	vehicule_id INT PRIMARY KEY,
+	marque VARCHAR(150),
+	categorie_vehicule VARCHAR(200),
+	agence_id INT,
+	FOREIGN KEY (agence_id) REFERENCES Agence(agence_id)
+)
+
+CREATE TABLE Reservation (
+	reservation_id INT PRIMARY KEY,
+	client_id INT,
+	agence_id INT,
+	vehicule_id INT,
+	ville_depart VARCHAR(100),
+	ville_arrivee VARCHAR(100),
+	date_depart DATETIME,
+	date_arrivee DATETIME,
+	categorie_vehicule VARCHAR(250),
+	tarif DECIMAL(10,2)
+	FOREIGN KEY (client_id) REFERENCES Client(client_id),
+	FOREIGN KEY (agence_id) REFERENCES Agence(agence_id),
+	FOREIGN KEY (vehicule_id) REFERENCES Vehicule(vehicule_id)
+);
